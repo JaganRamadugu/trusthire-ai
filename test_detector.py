@@ -36,3 +36,8 @@ print(analyze_job(genuine_job))
 print("\n========== SUSPICIOUS JOB ==========")
 
 print(analyze_job(suspicious_job))
+
+from pprint import pprint
+
+pprint(analyze_job(genuine_job))
+pprint(analyze_job(suspicious_job))

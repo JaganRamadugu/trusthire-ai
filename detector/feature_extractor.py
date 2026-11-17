@@ -28,9 +28,17 @@ SCAM_KEYWORDS = {
     ],
     "sensitive_information": [
         "share aadhaar",
+        "send aadhaar",
+        "send your aadhaar",
+        "your aadhaar",
+        "aadhaar card",
         "share pan card",
+        "send pan card",
+        "bank details",
+        "bank account details",
         "send bank details",
-        "provide otp"
+        "provide otp",
+        "share otp"
     ]
 }
 
