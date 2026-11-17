@@ -43,6 +43,8 @@ htmlcov/
 *.pkl
 *.joblib
 *.model
+# Explicitly track required production model artifact for Streamlit deployment
+!detector/fraud_model.joblib
 
 # Large datasets
 data/*.csv

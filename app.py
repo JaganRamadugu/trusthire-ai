@@ -383,10 +383,10 @@ if result:
 
         <!-- Score Breakdown Grid -->
         <div class="metrics-grid">
-            <!-- Metric 1: Overall Risk Index -->
+            <!-- Metric 1: Overall Risk Score -->
             <div class="metric-card-box">
                 <div class="metric-header">
-                    <span class="metric-label">Overall Risk Index</span>
+                    <span class="metric-label">Overall Risk Score</span>
                     <span class="metric-icon-small">🎯</span>
                 </div>
                 <div class="metric-value-row">
@@ -396,13 +396,13 @@ if result:
                 <div class="metric-progress-bg">
                     <div class="metric-progress-fill" style="width: {risk_score}%; background-color: {risk_color};"></div>
                 </div>
-                <p class="metric-desc">Maximum evaluated index from ML model score (0–100) and heuristic scoring.</p>
+                <p class="metric-desc">Maximum evaluated score from ML model output (0–100) and heuristic scoring.</p>
             </div>
 
-            <!-- Metric 2: ML Probability -->
+            <!-- Metric 2: ML Signal Score -->
             <div class="metric-card-box">
                 <div class="metric-header">
-                    <span class="metric-label">Machine Learning Score</span>
+                    <span class="metric-label">ML Signal Score</span>
                     <span class="metric-icon-small">🤖</span>
                 </div>
                 <div class="metric-value-row">
@@ -412,13 +412,13 @@ if result:
                 <div class="metric-progress-bg">
                     <div class="metric-progress-fill" style="width: {ml_score}%; background-color: #2563eb;"></div>
                 </div>
-                <p class="metric-desc">TF-IDF Vectorizer + Scikit-Learn classifier ML model score (0–100).</p>
+                <p class="metric-desc">TF-IDF Vectorizer + Scikit-Learn classifier ML model output (0–100).</p>
             </div>
 
-            <!-- Metric 3: Rule-Based Score -->
+            <!-- Metric 3: Rule-Based Signal Score -->
             <div class="metric-card-box">
                 <div class="metric-header">
-                    <span class="metric-label">Rule-Based Score</span>
+                    <span class="metric-label">Rule-Based Signal Score</span>
                     <span class="metric-icon-small">📑</span>
                 </div>
                 <div class="metric-value-row">
@@ -428,7 +428,7 @@ if result:
                 <div class="metric-progress-bg">
                     <div class="metric-progress-fill" style="width: {rule_score}%; background-color: #0f172a;"></div>
                 </div>
-                <p class="metric-desc">Weighted scam heuristic index across known fraud categories.</p>
+                <p class="metric-desc">Weighted scam heuristic index across predefined fraud categories.</p>
             </div>
         </div>
 

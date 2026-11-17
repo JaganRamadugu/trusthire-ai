@@ -1,0 +1,155 @@
+================================================================================
+TRUSTHIRE AI — MODEL EVALUATION REPORT
+================================================================================
+Date: 2026-11-17
+Dataset: EMSCAD (Employment Scam Aegean Dataset) — data/fake_job_postings.csv
+Model Architecture: Scikit-Learn Pipeline (TfidfVectorizer + LogisticRegression)
+Trained Representation: 'description' column only (resolving training/prediction mismatch)
+
+--------------------------------------------------------------------------------
+1. DATASET CHARACTERISTICS & CLASS IMBALANCE
+--------------------------------------------------------------------------------
+Total records:                  17,880
+Genuine postings (Class 0):     17,014 (95.16%)
+Fraudulent postings (Class 1):  866 (4.84%)
+Imbalance ratio:                ~19.6 : 1 (Genuine to Fraudulent)
+
+Why Accuracy Alone Is Insufficient:
+In a dataset where 95.16% of postings are genuine, a naive baseline classifier
+predicting "Genuine" for every single input achieves 95.16% accuracy while catching
+0% of fraudulent postings (0% recall, 0% F1). For fraud detection, accuracy is
+fundamentally misleading. The critical evaluation metrics are Fraudulent-class Recall
+(avoiding missing scams), Fraudulent-class Precision (avoiding false alarms),
+F1-score (harmonic balance), and PR-AUC (Average Precision across decision thresholds).
+
+Geographic & Temporal Note:
+The EMSCAD dataset was collected in 2012-2014 primarily from international job boards.
+It serves as an academic benchmark prototype, not a fully representative model of
+contemporary recruitment fraud (such as UPI deposit scams or WhatsApp recruitment fraud).
+
+--------------------------------------------------------------------------------
+2. DUPLICATE ANALYSIS & DATA LEAKAGE MITIGATION
+--------------------------------------------------------------------------------
+Text Normalization: Lowercased, stripped, whitespace collapsed.
+Total records:                          17,880
+Unique normalized descriptions:         14,592
+Duplicate description groups (count>1): 1,264
+Records belonging to duplicate groups:  4,552 (25.46% of all records)
+
+Conflicting Label Analysis:
+Identified description groups with conflicting labels (same text, different label): 1
+Details:
+- Text snippet: "workable is a product-driven software company. with thousands of enterprise user..."
+  Occurrences: 3 (Genuine: 2, Fraudulent: 1)
+  Root Cause: Real-world scammer copied a genuine employer's posting verbatim.
+
+Data Splitting Strategy:
+A naive random train_test_split allows identical descriptions to appear in both training
+and test sets, resulting in severe data leakage and artificially inflated metrics.
+To eliminate this, we used StratifiedGroupKFold (5 folds) grouped by exact normalized
+description. All identical postings are strictly assigned to the same fold.
+Overlapping duplicate groups between training and test sets: 0 (Zero leakage).
+
+--------------------------------------------------------------------------------
+3. FINAL MODEL EVALUATION METRICS (HELD-OUT TEST SET — FOLD 0)
+--------------------------------------------------------------------------------
+Train Set Size:                 14,304 postings (Genuine: 13,611, Fraudulent: 693)
+Test Set Size:                  3,576 postings (Genuine: 3,403, Fraudulent: 173)
+
+Metrics on Held-Out Test Set:
+- Accuracy:                     0.9555 (95.55%)
+- Fraudulent-Class Precision:   0.5354 (53.54%)
+- Fraudulent-Class Recall:      0.6127 (61.27%)
+- Fraudulent-Class F1-Score:    0.5714 (57.14%)
+- Average Precision (PR-AUC):   0.6625 (66.25%)
+
+Confusion Matrix (Threshold = 0.5):
+                  Predicted Genuine (0)    Predicted Fraudulent (1)
+Actual Genuine (0)          3311 (TN)                    92 (FP)
+Actual Fraud (1)              67 (FN)                   106 (TP)
+
+Confusion Breakdown:
+- True Negatives (TN):          3,311 (Correctly flagged genuine)
+- False Positives (FP):         92 (Genuine flagged as fraudulent)
+- False Negatives (FN):         67 (Fraudulent postings missed by ML)
+- True Positives (TP):          106 (Fraudulent postings caught by ML)
+
+Classification Report:
+              precision    recall  f1-score   support
+
+     Genuine       0.98      0.97      0.98      3403
+  Fraudulent       0.54      0.61      0.57       173
+
+    accuracy                           0.96      3576
+   macro avg       0.76      0.79      0.77      3576
+weighted avg       0.96      0.96      0.96      3576
+
+
+--------------------------------------------------------------------------------
+4. 5-FOLD STRATIFIED GROUP CROSS-VALIDATION SUMMARY
+--------------------------------------------------------------------------------
+Fold Details:
+- Fold 0: Train=14304, Val=3576 (Fraud=173) | Acc=0.9555 | Prec=0.5354 | Rec=0.6127 | F1=0.5714 | PR-AUC=0.6625
+- Fold 1: Train=14304, Val=3576 (Fraud=174) | Acc=0.9622 | Prec=0.5907 | Rec=0.7299 | F1=0.6530 | PR-AUC=0.7206
+- Fold 2: Train=14304, Val=3576 (Fraud=173) | Acc=0.9525 | Prec=0.5083 | Rec=0.5318 | F1=0.5198 | PR-AUC=0.6310
+- Fold 3: Train=14304, Val=3576 (Fraud=173) | Acc=0.9494 | Prec=0.4808 | Rec=0.5780 | F1=0.5249 | PR-AUC=0.5997
+- Fold 4: Train=14304, Val=3576 (Fraud=173) | Acc=0.9645 | Prec=0.6186 | Rec=0.6936 | F1=0.6540 | PR-AUC=0.7071
+
+Cross-Validation Mean & Standard Deviation across all 5 Folds:
+- Accuracy:                     0.9568 (+/- 0.0057)
+- Fraudulent-Class Precision:   0.5467 (+/- 0.0511)
+- Fraudulent-Class Recall:      0.6292 (+/- 0.0730)
+- Fraudulent-Class F1-Score:    0.5846 (+/- 0.0590)
+- Average Precision (PR-AUC):   0.6642 (+/- 0.0454)
+
+--------------------------------------------------------------------------------
+5. MODEL COMPARISON: PREVIOUS MODEL vs. NEW MODEL
+--------------------------------------------------------------------------------
+Old Model Setup:
+- Trained on 8 concatenated metadata fields (title, company_profile, description,
+  requirements, benefits, employment_type, required_experience, industry).
+- Evaluated under a naive random split (subject to duplicate leakage).
+- Severe production mismatch: App passes only single pasted description.
+
+Direct Comparison on the Duplicate-Aware Test Set (Description Input Only):
+Metric                      Previous Model (Mismatch)     New Model (Consistent)
+--------------------------------------------------------------------------------
+Accuracy:                   0.9712                       0.9555
+Fraudulent Precision:       0.6651                       0.5354
+Fraudulent Recall:          0.8150                       0.6127
+Fraudulent F1-Score:        0.7325                       0.5714
+Average Precision (PR-AUC): 0.8170                       0.6625
+False Positives (FP):           71                           92
+False Negatives (FN):           32                           67
+
+Key Insights:
+1. The old model's apparent high performance (F1 ~0.84) on the 8-column random split was
+   an artifact of both auxiliary company_profile signals and duplicate data leakage.
+2. When the old model is tested on description text alone (reflecting user reality), its
+   recall drops significantly because its feature weights expected concatenated metadata.
+3. The new model is trained and tested exclusively on description text, aligning training
+   and inference pipelines with zero input representation mismatch.
+
+--------------------------------------------------------------------------------
+6. RISK SCORE INTERPRETATION & SYSTEM DESIGN
+--------------------------------------------------------------------------------
+The TrustHire AI prototype uses a hybrid scoring mechanism:
+    ml_score = round(ml_probability * 100)
+    combined_score = max(ml_score, rule_score)
+
+Risk Categories:
+- 0–29:  Low Risk
+- 30–59: Suspicious
+- 60–100: High Risk
+
+Important Limitations & Architectural Safeguards:
+1. The ML model score is a heuristic signal (0-100), NOT a statistically calibrated
+   probability of fraud. Because logistic regression was trained with class_weight='balanced',
+   its raw sigmoid outputs reflect an artificially rebalanced class prior.
+2. The hybrid design acts as a defense-in-depth safeguard:
+   - When the ML model misses a novel scam format (False Negative), the rule-based engine
+     catches explicit scam signatures (e.g. UPI registration fees, Aadhaar card requests).
+   - When text lacks explicit keywords, the ML model flags suspicious structural patterns.
+3. A Low Risk score indicates only an absence of predefined scam indicators in the submitted
+   text; it does NOT independently verify employers, recruiters, or job authentications.
+================================================================================
