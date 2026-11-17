@@ -110,7 +110,7 @@ st.html("""
     </div>
     <div class="nav-status">
         <span class="status-dot-pulse"></span>
-        <span>AI Engine Operational</span>
+        <span>Detection Engine Ready</span>
     </div>
 </header>
 """)
@@ -166,7 +166,7 @@ with col_lbl:
     st.html("<div style='padding-top: 8px; font-weight: 700; font-size: 0.82rem; color: #64748b; text-transform: uppercase;'>Quick Samples:</div>")
 
 with col_s1:
-    st.button("📋 Genuine Job", help="Load a legitimate engineering internship listing", on_click=set_sample, args=(GENUINE_SAMPLE,), use_container_width=True)
+    st.button("📋 Genuine Job", help="Load a standard software engineering internship posting", on_click=set_sample, args=(GENUINE_SAMPLE,), use_container_width=True)
 
 with col_s2:
     st.button("⚠️ Suspicious Offer", help="Load an offer with artificial urgency and pressure", on_click=set_sample, args=(SUSPICIOUS_SAMPLE,), use_container_width=True)
@@ -235,7 +235,7 @@ if result:
     else:
         status_class = "low-risk"
         status_icon = "✅"
-        status_tagline = "Minimal suspicious patterns detected. The listing matches standard genuine recruitment formats."
+        status_tagline = "Minimal suspicious patterns detected. No predefined fraud indicators were found in the provided text."
         risk_color = "#059669"
 
     # Clamp pointer position between 3% and 97% for clean visual representation
@@ -320,7 +320,7 @@ if result:
             <div>
                 <h4 class="no-warning-title">No Predefined Warning Patterns Detected</h4>
                 <p class="no-warning-text">
-                    TrustHire AI scanned the posting against all known fraud categories (advance fees, credential harvesting, excessive urgency, and unrealistic guarantees). No matching warning patterns were found.
+                    TrustHire AI scanned the posting against all known fraud categories (advance fees, credential harvesting, excessive urgency, and unrealistic guarantees). No matching warning patterns were found. A low risk assessment reflects an absence of detected scam signals, not a guarantee that the opportunity or employer is authentic.
                 </p>
             </div>
         </div>
@@ -356,7 +356,7 @@ if result:
             <div class="meter-header">
                 <div>
                     <span style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Visual Threat Assessment</span>
-                    <h4 class="meter-title">Comprehensive Risk Meter</h4>
+                    <h4 class="meter-title">Overall Risk Indicator</h4>
                 </div>
                 <div>
                     <span class="meter-score-large {status_class}">{risk_score}</span>
@@ -375,7 +375,7 @@ if result:
             </div>
 
             <div class="meter-legend">
-                <span>0 • Low Risk Safe (0–29)</span>
+                <span>0 • Low Risk (0–29)</span>
                 <span>30 • Suspicious Threshold (30–59)</span>
                 <span>60 • High Risk Scam Alert (60–100)</span>
             </div>
@@ -396,7 +396,7 @@ if result:
                 <div class="metric-progress-bg">
                     <div class="metric-progress-fill" style="width: {risk_score}%; background-color: {risk_color};"></div>
                 </div>
-                <p class="metric-desc">Maximum evaluated index from ML probability and heuristic scoring.</p>
+                <p class="metric-desc">Maximum evaluated index from ML model score (0–100) and heuristic scoring.</p>
             </div>
 
             <!-- Metric 2: ML Probability -->
@@ -412,7 +412,7 @@ if result:
                 <div class="metric-progress-bg">
                     <div class="metric-progress-fill" style="width: {ml_score}%; background-color: #2563eb;"></div>
                 </div>
-                <p class="metric-desc">TF-IDF Vectorizer + Scikit-Learn classifier fraud probability.</p>
+                <p class="metric-desc">TF-IDF Vectorizer + Scikit-Learn classifier ML model score (0–100).</p>
             </div>
 
             <!-- Metric 3: Rule-Based Score -->
@@ -515,7 +515,7 @@ st.html("""
     <div>
         <h4 class="disclaimer-title">Safety & Verification Advisory</h4>
         <p class="disclaimer-text">
-            This is an automated risk assessment prototype, not a guarantee that an opportunity is genuine or fraudulent. Fraudulent actors continually alter phrasing to evade filters. Always independently verify companies, check official corporate domains and LinkedIn profiles, and never send money or sensitive identification details (such as Aadhaar, PAN, or banking credentials) as part of an application.
+            This application is an automated risk assessment prototype and does not independently verify companies, recruiters, or job vacancies. A low risk score indicates only that predefined suspicious patterns were not detected in the submitted text; it does not guarantee that an opportunity is authentic, safe, or genuine. Scammers continually adapt tactics and phrasing to evade detection filters. Always independently research employers, verify official corporate email domains and career websites, and never pay upfront fees or share sensitive documents (such as Aadhaar, PAN, or banking details) during the application process.
         </p>
     </div>
 </div>
