@@ -179,8 +179,8 @@ def run_pipeline():
     print(f"\n      5-Fold CV Mean F1:     {cv_summary['f1_mean']:.4f} (+/- {cv_summary['f1_std']:.4f})")
     print(f"      5-Fold CV Mean PR-AUC: {cv_summary['pr_auc_mean']:.4f} (+/- {cv_summary['pr_auc_std']:.4f})")
 
-    # 5. Train final model: Fold 0 as held-out test set, Folds 1-4 as training set
-    print("\n[5/6] Training final model (Folds 1-4 as train, Fold 0 as held-out test)...")
+    # 5. Train evaluation model on training fold (Folds 1-4) and test on held-out Fold 0
+    print("\n[5/6] Training evaluation model (Folds 1-4 as train, Fold 0 as held-out test)...")
     splits = list(sgkf.split(X, y, groups))
     train_idx, test_idx = splits[0]  # Fold 0 is test, remaining are train
 
@@ -192,7 +192,7 @@ def run_pipeline():
     test_groups = set(groups.iloc[test_idx])
     assert len(train_groups.intersection(test_groups)) == 0, "Group leakage in final test split!"
 
-    final_model = Pipeline([
+    eval_model = Pipeline([
         ("tfidf", TfidfVectorizer(
             stop_words="english",
             max_features=30000,
@@ -206,10 +206,10 @@ def run_pipeline():
         ))
     ])
 
-    final_model.fit(X_train, y_train)
+    eval_model.fit(X_train, y_train)
 
-    y_test_pred = final_model.predict(X_test)
-    y_test_prob = final_model.predict_proba(X_test)[:, 1]
+    y_test_pred = eval_model.predict(X_test)
+    y_test_prob = eval_model.predict_proba(X_test)[:, 1]
 
     # Final test metrics
     test_acc = accuracy_score(y_test, y_test_pred)
@@ -220,7 +220,7 @@ def run_pipeline():
     cm = confusion_matrix(y_test, y_test_pred)
     tn, fp, fn, tp = cm.ravel()
 
-    print("\n      Final Test Set Evaluation (Fold 0 Held-Out):")
+    print("\n      Independent Test Set Evaluation (Fold 0 Held-Out, Zero Leakage):")
     print(f"      Accuracy:              {test_acc:.4f} ({test_acc * 100:.2f}%)")
     print(f"      Fraudulent Precision:  {test_prec:.4f} ({test_prec * 100:.2f}%)")
     print(f"      Fraudulent Recall:     {test_rec:.4f} ({test_rec * 100:.2f}%)")
@@ -253,10 +253,25 @@ def run_pipeline():
         except Exception as e:
             print(f"      Note: Could not evaluate previous model on test fold: {e}")
 
-    # 6. Save model and write report
-    print("\n[6/6] Saving model and generating evaluation report...")
-    joblib.dump(final_model, MODEL_PATH)
-    print(f"      Model saved to: {MODEL_PATH}")
+    # 6. Fit final production model on full dataset (100% of data) and save artifact
+    print("\n[6/6] Fitting production pipeline on full dataset (17,880 records) and writing report...")
+    production_model = Pipeline([
+        ("tfidf", TfidfVectorizer(
+            stop_words="english",
+            max_features=30000,
+            ngram_range=(1, 2),
+            min_df=2
+        )),
+        ("classifier", LogisticRegression(
+            class_weight="balanced",
+            max_iter=1000,
+            random_state=42
+        ))
+    ])
+    production_model.fit(X, y)
+
+    joblib.dump(production_model, MODEL_PATH)
+    print(f"      Production model saved to: {MODEL_PATH}")
 
     # Construct report
     report_content = f"""================================================================================
@@ -266,6 +281,7 @@ Date: 2026-11-17
 Dataset: EMSCAD (Employment Scam Aegean Dataset) — data/fake_job_postings.csv
 Model Architecture: Scikit-Learn Pipeline (TfidfVectorizer + LogisticRegression)
 Trained Representation: 'description' column only (resolving training/prediction mismatch)
+Production Model Deployment: Retrained on full dataset (17,880 records) following independent holdout evaluation
 
 --------------------------------------------------------------------------------
 1. DATASET CHARACTERISTICS & CLASS IMBALANCE

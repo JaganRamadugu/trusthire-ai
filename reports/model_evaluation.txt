@@ -5,6 +5,7 @@ Date: 2026-11-17
 Dataset: EMSCAD (Employment Scam Aegean Dataset) — data/fake_job_postings.csv
 Model Architecture: Scikit-Learn Pipeline (TfidfVectorizer + LogisticRegression)
 Trained Representation: 'description' column only (resolving training/prediction mismatch)
+Production Model Deployment: Retrained on full dataset (17,880 records) following independent holdout evaluation
 
 --------------------------------------------------------------------------------
 1. DATASET CHARACTERISTICS & CLASS IMBALANCE
